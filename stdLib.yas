@@ -1,0 +1,780 @@
+/*
+This is the main standard library for ZPE, written entirely in YASS.
+The main purpose behind it is to performance test ZPE/YASS.
+There are some very complex algorithms in here such as sorting algorithms.
+Code is expected to take no longer than 1s to compile and execute.
+It is necessary that this code is efficient as possible to test ZPE/YASS.
+All functions should provide a return type in all versions after ZPE 1.11.1.
+This version is only compatible with ZPE version 1.11.4+ due to union return types.
+*/
+
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "A timer that uses a start point and end point to calculate timings."
+public class timer
+
+  private $begin = 0
+  private $finish = 0
+  private $stopped = false
+
+  public function getTime()
+    if(this->$stopped)
+      return this->$finish - this->$begin
+    else
+      return time() - this->$begin
+    end if
+  end function
+
+  public function go()
+    this->$stopped = false
+    $begin = time()
+    return "Started"
+  end function
+
+  public function stop()
+    this->$stopped = true
+    this->$finish = time()
+    return "Stopped"
+  end function
+
+  public function getStart()
+    return this->$begin
+  end function
+
+  public function getEnd()
+    return this->$finish
+  end function
+
+end class
+
+@author "Jamie Balfour"
+@date "March 2023"
+@doc "This is a fairly simple queue structure, implemented in pure YASS"
+public class queue
+
+  private $items = []
+
+  public function enqueue($x)
+
+    this->$items = list_add_element(this->$items, $x)
+
+  end function
+
+  public function dequeue()
+
+    if(count(this->$items) > 0)
+      $r = this->$items[0]
+      this->$items = list_remove_element(this->$items, 0)
+      return $r
+    else
+      return null
+    end if 
+
+  end function
+
+end class
+
+@author "Jamie Balfour"
+@date "March 2023"
+@doc "Like the above, this is a fairly simple implementation of a stack structure, implemented in pure YASS"
+public class stack
+
+  private $items = []
+
+  public function push($x)
+
+    this->$items = list_add_element(this->$items, $x)
+
+  end function
+
+  public function pop()
+
+    if(count(this->$items) > 0)
+      $r = this->$items[count(this->$items) - 1]
+      this->$items = list_remove_element(this->$items, count(this->$items) - 1)
+      return $r
+    else
+      return null
+    end if 
+
+  end function
+
+end class
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "If users choose to run this application this method is invoked."
+function main()
+
+  //Change to false to hide all timing
+  $display_timings = true
+
+  function showTime($t)
+    if($display_timings == true)
+      print("Time: " & $t & "ms")
+    end if
+  end function
+
+  $l = [43, 12, 8, 23, 99, 301, 41, 22, 91, 451, 27, 83, 106, 11, 13]
+
+  for($i = 0; $i < 5; $i++)
+    list_add_element($l, random_number(100, 0))
+  end for
+
+  //An ordered associative array
+  $a = map_create_ordered([77, "Jack"], [41, "Emma"], [98, "James"], [21, "Jamie"])
+  $timer = new timer()
+
+  $timer->go()
+
+  print("Timer started.")
+
+  $q = new queue()
+  print("$q->enqueue(13)")
+  $q->enqueue(13)
+  print("$q->enqueue(10)")
+  $q->enqueue(10)
+  print("$q->enqueue(21)")
+  $q->enqueue(21)
+  print("$q->dequeue(): " & $q->dequeue())
+  print("$q->dequeue(): " & $q->dequeue())
+
+  $s = new stack()
+  print("$s->push(13)")
+  $s->push(13)
+  print("$s->push(10)")
+  $s->push(10)
+  print("$s->push(21)")
+  $s->push(21)
+  print("$s->pop(): " & $s->pop())
+  print("$s->pop(): " & $s->pop())
+
+
+  print("combination_counter(3, 3): " & combination_counter(3, 3))
+  print("combination_counter(10, 2): " & combination_counter(10, 2))
+  print("gcd(54, 5): " & gcd(54, 5))
+  print("fibonacci_generator(10): " & fibonacci_generator(10))
+  print("calculate_area([[type => square, width => 20, height => 20], [type => triangle, width => 5, height => 5]]):" & calculate_area([["type" => "square", "width" => 20, "height" => 20], ["type" => "triangle", "width" => 5, "height" => 5]]))
+
+  print("$l: " & $l)
+  print("$a: " & $a)
+
+  //Bubble sorts
+  print("bubble_sort($l): " & bubble_sort($l))
+  showTime($timer->getTime())
+  print("bubble_sort($a): " & bubble_sort($a))
+  showTime($timer->getTime())
+
+  //Insertion sorts
+  print("insertion_sort($l): " & insertion_sort($l))
+  showTime($timer->getTime())
+  print("insertion_sort($a): " & insertion_sort($a))
+  showTime($timer->getTime())
+
+  //Quick sorts
+  print("quicksort($l): " & quicksort($l))
+  showTime($timer->getTime())
+  print("quicksort($a): " & quicksort($a))
+  showTime($timer->getTime())
+
+  //Merge sorts
+  print("mergesort($l): " & mergesort($l))
+  showTime($timer->getTime())
+  print("mergesort($a): " & mergesort($a))
+  showTime($timer->getTime())
+
+  $l1 = [[32, 49], [32, 49], [37, 23]]
+  print("$l1: " & $l1)
+  print("is_injective($l1): ? Yes : No: " & is_injective($l1) ? "Yes" : "No")
+  $l2 = [[32, 49], [32, 42], [37, 23]]
+  print("$l2: " & $l2)
+  print("is_injective($l2): ? Yes : No: " & is_injective($l2) ? "Yes" : "No")
+  $l3 = [[32, 49], [88, 36], [21, 90]]
+  print("$l3: " & $l3)
+  print("is_injective($l3): ? Yes : No: " & is_injective($l3) ? "Yes" : "No")
+  showTime($timer->getTime())
+  print("infinite_product_calculator(1, 2, 3, 4, 5, 6, 7, 8): " & infinite_product_calculator(1, 2, 3, 4, 5, 6, 7, 8))
+  showTime($timer->getTime())
+  $l = [43, 12, 8, 23, 99, 301, 41, 22, 91, 451, 27, 83, 106, 11, 13]
+
+  print($l)
+  print("linear_search($l, 23): " & linear_search($l, 23))
+  //Binary searches
+  showTime($timer->getTime())
+  print("binary_search($l, 1): " & binary_search($l, 1) != -1 ? "Exists" : "Does not exist")
+  showTime($timer->getTime())
+  print("binary_search($l, 12): " & binary_search($l, 12) != -1 ? "Exists" : "Does not exist")
+  showTime($timer->getTime())
+  print("binary_search($l, 22): " & binary_search($l, 22) != -1 ? "Exists" : "Does not exist")
+  showTime($timer->getTime())
+
+
+  print("calculateDayOfWeek(13, 7, 1991): " & calculateDayOfWeek(13, 7, 1991))
+  showTime($timer->getTime())
+  print("calculateDayOfWeek(2, 10, 1993): " & calculateDayOfWeek(2, 10, 1993))
+  showTime($timer->getTime())
+  print("calculateDayOfWeek(28, 8, 1957): " & calculateDayOfWeek(28, 8, 1957))
+  showTime($timer->getTime())
+  print("calculateDayOfWeek(27, 3, 1956): " & calculateDayOfWeek(27, 3, 1956))
+  showTime($timer->getTime())
+
+  print('isAnagramOf("take", "Kate"): ' & isAnagramOf("take", "Kate"))
+  print('isAnagramOf("take", "Kates"): ' & isAnagramOf("take", "Kates"))
+  print('isAnagramOf("Joir Flambeau", "Jamie Balfour"): ' & isAnagramOf("Joir Flambeau", "Jamie Balfour"))
+
+  print("flip_number(-5): ", flip_number(-5))
+
+  print("meshCalculator(5): ", meshCalculator(5))
+
+  $timer->stop()
+
+  print("Timer finished : " & $timer->getTime() & "ms")
+
+end function
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "Calculates the whole area of a room with multiple areas in it."
+public function calculate_area(list $l) : number
+
+  $total = 0
+  for each($l as $section)
+    if($section["type"] == "triangle")
+      $section_size = ($section["width"] * $section["height"]) / 2
+    else
+      $section_size = $section["width"] * $section["height"])
+    end if
+    $total += $section_size
+  end for
+
+  return $total
+
+end function
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "Obtains the greatest common divisor of two numbers, $a and $b."
+public function gcd(number $a, number $b) : number
+
+  if($b <= 1)
+    return $a
+  end if
+
+  $div = floor($a / $b)
+
+  $remainder = $a - ($b * $div)
+
+  return gcd($b, $remainder)
+
+end function
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "A simple bubble sort."
+public function bubble_sort(mixed $l) : list | map | boolean
+
+  if(type($l) == type([=>]))
+
+    $skeys = bubble_sort(map_get_keys($l))
+    $output = map_create_ordered()
+
+    for each($skeys as $k)
+      $v = $l[$k]
+      $output[$k] = $v
+
+    end for
+
+    return $output
+
+  end if
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+    return false
+  end if
+
+  $len = list_get_length($l)
+  $temp = 0
+
+  for ($i = 0; $i < $len; $i++)
+    for($j = 0; $j < ($len - 1 - $i); $j++)
+      if($j + 1 < $len && $l[$j + 1] < $l[$j])
+        $l = list_swap_elements($l, $j, $j + 1)
+      end if
+    end for
+  end for
+
+  return $l
+end function
+
+@author "Jamie Balfour"
+@date "July 2016"
+@doc "A simple insertion sort. Jamie Balfour July 2016"
+public function insertion_sort(mixed $l) : list | map | boolean
+
+
+  if(type($l) == type([=>]))
+
+    $skeys = insertion_sort(map_get_keys($l))
+    $output = map_create_ordered()
+
+    for each($skeys as $k)
+      $v = $l[$k]
+      $output[$k] = $v
+    end for
+
+    return $output
+
+  end if
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+    return 0
+  end if
+
+
+
+  for ($i = 1; $i < $l.length(); $i++)
+    $element = $l[$i]
+    $j = $i
+
+    while($j > 0 && $l[$j - 1] > $element)
+      //move value to right and key to previous smaller index
+      $l = list_set_at_index($l, $j, $l[$j - 1])
+      $j--
+    end while
+
+    //Put the element at index $j
+
+    $l = list_set_at_index($l, $j, $element)
+
+  end for
+
+  return $l
+
+end function
+
+@author "Jamie Balfour"
+@date "July 2016"
+@doc "A simple quicksort algorithm that uses recursion."
+public function quicksort(mixed $l) : list | map | boolean
+
+  function quicksort_inner($l, $low, $high)
+
+    $i = $low
+    $j = $high
+
+    $pivot = $l[$low + ($high - $low) / 2]
+
+    while($i <= $j)
+      while($l[$i] < $pivot)
+        $i++
+      end while
+
+      while($l[$j] > $pivot)
+        $j--
+      end while
+
+      if($i <= $j)
+        $l = list_swap_elements($l, $i, $j)//swap($l, $i, $j)
+        $i++
+        $j--
+      end if
+    end while
+
+    if($low < $j)
+      $l = quicksort_inner($l, $low, $j)
+    end if
+
+    if($i < $high)
+      $l = quicksort_inner($l, $i, $high)
+    end if
+
+    return $l
+
+  end function
+
+  if(type($l) == type([=>]))
+
+    $skeys = quicksort(map_get_keys($l))
+    $output = map_create_ordered()
+
+    for each($skeys as $k)
+      $v = $l[$k]
+      $output[$k] = $v
+    end for
+
+    return $output
+
+  end if
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+    return 0
+  end if
+
+  if(list_get_length($l) == 0)
+    return []
+  end if
+
+  $numb = list_get_length($l)
+
+  return quicksort_inner($l, 0, $numb - 1)
+
+
+end function
+
+
+@author "Jamie Balfour"
+@date "April 2019"
+@doc "A merge sort algorithm."
+public function mergesort(mixed $l) : list | map | boolean
+
+  //Nested function designed to perform merge
+  function merge(mixed $left, mixed $right)
+
+    $res = [];
+
+    while (list_get_length($left) > 0 && list_get_length($right) > 0)
+      if($left[0] > $right[0])
+        list_add_element(&$res, $right[0])
+        $right = list_slice($right , 1)
+      else
+        list_add_element(&$res, $left[0])
+        $left = list_slice($left, 1)
+      end if
+    end while
+
+    while (list_get_length($left) > 0)
+      list_add_element(&$res, $left[0])
+      $left = list_slice($left, 1)
+    end while
+
+    while (list_get_length($right) > 0)
+      list_add_element(&$res, $right[0])
+      $right = list_slice($right, 1)
+    end while
+
+    return $res
+
+  end function
+
+  if(type($l) == type([=>]))
+
+    $skeys = mergesort(map_get_keys($l))
+
+    $output = map_create_ordered()
+    for each($skeys as $k)
+
+      $v = $l[$k]
+      $output[$k] = $v
+
+    end for
+
+    return $output
+
+  end if
+
+  if(list_get_length($l) == 1)
+    return $l
+  end if
+
+  $mid = floor(list_get_length($l) / 2)
+  $left = list_slice($l, 0, $mid)
+  $right = list_slice($l, $mid)
+
+
+  $left = mergesort($left)
+  $right = mergesort($right)
+
+  return merge($left, $right)
+
+end function
+
+
+@author "Jamie Balfour"
+@date "December 2015"
+@doc "A function to detect if a list of lists (considered as objects) is injective. For instance, [[32, 43], [31, 33], [22, 99]] is injective whereas [[32, 43], [43, 21], [32, 21]] is not"
+public function is_injective(list $l) : boolean
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+    return 0
+  end if
+
+  //This version of isInjective uses associative arrays
+
+  $domList = [null => null]
+
+
+  $len = list_get_length($l)
+
+  $i = 0
+
+  while($i < $len)
+    //Get the pair inside the list at the current index, $i
+    $t = $l[$i]
+
+    //Check that it is a list
+    if(type($t) != type([]))
+      return false
+    end if
+
+    //Domain is the first element of the list
+    $d = $t[0]
+    //Range is the second element of the list
+    $r = $t[1]
+
+    if(map_contains($domList, $d))
+      $temp = $domList[$d]
+      if($temp != $r)
+        return(false)
+      end if
+    end if
+
+    $domList = $domList.put($d, $r)
+
+    $i++
+  end while
+
+  return(true)
+
+end function
+
+@author "Jamie Balfour"
+@date "July 2016"
+@doc "Calculates how many combinations of items there are for $count_of_positions
+positions without repetition. E.g. 123 and 124 are combinations, but 213 is not (since it is a repeat)."
+public function combination_counter(number $count_of_items, number $count_of_positions) : number
+
+  $n = $count_of_items
+  $r = $count_of_positions
+
+  return factorial($n + $r - 1) / (factorial($r) * factorial($n - 1))
+
+end function
+
+@author "Jamie Balfour"
+@date "January 2016"
+@doc "Given a list of length n, the product is the total of each element added to the next. Updated for ZPE 1.8.11 with infinite parameters."
+public function infinite_product_calculator($l ...)
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+    return 0
+  end if
+
+  $total = 0
+  for each($l as $x)
+    $total = $total + $x
+  end for
+
+  return $total
+
+end function
+
+@author "Jamie Balfour"
+@date "July 2016"
+@doc "This function will generate n instances of the Fibonacci numbers"
+public function fibonacci_generator(number $n) : list
+
+  function fibonacci_inner(number $i, number $j)
+
+    return $i + $j
+
+  end function
+  $x = 1
+  $y = 2
+  $results = [1, 1, 2]
+  $i = 0
+  while($i < $n - 3)
+    $t = fibonacci_inner($x, $y)
+    $results = $results.put($t)
+    $x = $y
+    $y = $t
+    $i++
+  end while
+
+  return $results
+
+end function
+
+
+
+@author "Jamie Balfour"
+@date "November 2020"
+@doc "Performs a linear search on a list"
+public function linear_search(list $l, mixed $search) : number
+
+  if(type($l) != type([]))
+    throw_error("Incorrect type given")
+  end if
+
+  $pos = 0
+  $len = list_get_length($l)
+
+  while($pos < $len)
+
+    $current = list_get_at_index($l, $pos)
+    if($current == $search)
+      return $pos
+    end if
+
+    $pos++
+
+  end while
+
+  return -1
+
+end function
+
+
+@author "Jamie Balfour"
+@date "April 2019"
+@doc "Binary search program to return the index"
+public function binary_search(list $l, mixed $search_term) : number
+
+
+  if(type($l) == type([]))
+    if(list_get_length($l) == 0)
+      return -1
+    end if
+
+    //Must sort it first
+    $l = quicksort($l)
+
+    $low = 0
+    $high = list_get_length($l) - 1
+
+    while ($low <= $high)
+      //Middle index
+      $mid = floor(($low + $high) / 2)
+
+      $cur = $l[$mid]
+
+      // element found at mid
+      if($cur == $search_term)
+          return $mid
+      end if
+
+      if ($search_term < $cur)
+        // search the left side of the array
+        $high = $mid -1
+      else
+        // search the right side of the array
+        $low = $mid + 1;
+      end if
+    end while
+  end if
+
+  return -1
+
+end function
+
+@author "Jamie Balfour"
+@date "21 April 2022"
+@doc "Program designed to calculate the day of the week from a specified day, month and year"
+public function calculateDayOfWeek(number $day, number $month, number $year) : string
+
+  if(string_get_length($year) != 4)
+    print_error("Year length incorrect")
+    return null
+  end if
+
+
+  $year1 = value(string_get_substring($year, 0, 2))
+  $year2 = string_get_substring($year, 2, 4)
+
+  $century_part = match($year1 :
+    17 => 4
+    18 => 2
+    19 => 0
+    20 => 6
+    21 => 4
+    22 => 2
+    23 => 0
+  )
+
+  $month_part = match($month :
+    1 => 0
+    2 => 3
+    3 => 3
+    4 => 6
+    5 => 1
+    6 => 4
+    7 => 6
+    8 => 2
+    9 => 5
+    10 => 0
+    11 => 3
+    12 => 5
+  )
+
+  $year_part = (($year2 / 4) + $year2) % 7
+
+  $res = floor($year_part + $century_part + $month_part + $day) % 7
+
+  $out = -1
+
+  when($res)
+    is 0
+      $out = "Sunday"
+    is 1
+      $out = "Monday"
+    is 2
+      $out = "Tuesday"
+    is 3
+      $out = "Wednesday"
+    is 4
+      $out = "Thursday"
+    is 5
+      $out = "Friday"
+    is 6
+      $out = "Saturday"
+  end when
+
+  return $out
+
+end function
+
+@author "Jamie Balfour"
+@date "21 April 2023"
+@doc "Checks if a number is an anagram of another word"
+function isAnagramOf(string $word1, string $word2) : boolean
+  if(string_get_length($word1) > string_get_length($word2)){
+    for each(string_to_lowercase($word1) as $char)
+      if(!string_contains(string_to_lowercase($word2), $char))
+    	  return false
+      end if
+    end for
+  else
+    for each(string_to_lowercase($word2) as $char)
+      if(!string_contains(string_to_lowercase($word1), $char))
+    	  return false
+      end if
+    end for
+  end if 
+
+  return true
+
+end function
+
+@author "Jamie Balfour"
+@date "21 April 2023"
+@doc "Flips any number into it's opposite form"
+function flip_number(mixed $n) : number
+
+  return 0 - $n
+
+end function
+
+@author "Jamie Balfour"
+@date "21 April 2023"
+@doc "Used to calculate how many channels there are in a mesh of n items"
+function meshCalculator(number $n) : number
+
+  $channels = ($n /2 ) * ($n - 1)
+  return $channels 
+
+end function
