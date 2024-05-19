@@ -1,11 +1,12 @@
 /*
 This is the main standard library for ZPE, written entirely in YASS.
-The main purpose behind it is to performance test ZPE/YASS.
-There are some very complex algorithms in here such as sorting algorithms.
+The main purpose behind it is to performance test Jamie Balfour's ZPE/YASS language and 
+runtime. There are some very complex algorithms here, such as sorting algorithms.
 Code is expected to take no longer than 1s to compile and execute.
-It is necessary that this code is efficient as possible to test ZPE/YASS.
+It is necessary that this code is as efficient as possible to test ZPE/YASS.
 All functions should provide a return type in all versions after ZPE 1.11.1.
-This version is only compatible with ZPE version 1.11.4+ due to union return types.
+This version is only compatible with ZPE version 1.11.12+ due to the use of the 
+string_compare function.
 */
 
 
@@ -45,6 +46,59 @@ public class timer
   public function getEnd()
     return this->$finish
   end function
+
+end class
+
+@author "Jamie Balfour"
+@date "March 2024"
+@doc "A singly linked list, implemented in pure YASS"
+public class linked_list
+
+
+  private $next = null
+  private $value = 0
+
+  function _construct($v)
+  
+    this->$value = $v
+
+  end function
+
+  public function getValue()
+
+    return this->$value
+
+  end function
+
+  public function setValue($v)
+
+    this->$value = $v
+
+  end function
+
+  public function addValue($v)
+
+    if(this->$next == null)
+      this->$next = new linked_list($v)
+    else
+      this->$next->addValue($v)
+    end if
+
+  end function
+
+  public function _output()
+    $output = this->$value
+    if(this->$next != null)
+       $output = $output & ", " & this->$next
+    end if
+
+    return $output
+    
+  end function
+
+
+  
+
 
 end class
 
@@ -112,21 +166,29 @@ function main()
 
   function showTime($t)
     if($display_timings == true)
-      print("Time: " & $t & "ms")
+      print("  Time: " & $t & "ms")
     end if
   end function
 
   $l = [43, 12, 8, 23, 99, 301, 41, 22, 91, 451, 27, 83, 106, 11, 13]
+  $n = ["John", "Fiona", "Maureen", "Roger", "James", "Gillian", "Jamie"]
 
   for($i = 0; $i < 5; $i++)
     list_add_element($l, random_number(100, 0))
   end for
 
   //An ordered associative array
-  $a = map_create_ordered([77, "Jack"], [41, "Emma"], [98, "James"], [21, "Jamie"])
+  $m = map_create_ordered([77, "Jack"], [41, "Emma"], [98, "James"], [21, "Jamie"])
   $timer = new timer()
 
   $timer->go()
+
+  $sll = new linked_list(10)
+  $sll->addValue(15)
+  for($i = 0 to 100)
+    $sll->addValue($i)
+  end for
+  print($sll)
 
   print("Timer started.")
 
@@ -137,8 +199,9 @@ function main()
   $q->enqueue(10)
   print("$q->enqueue(21)")
   $q->enqueue(21)
-//  print("$q->dequeue(): " & $q->dequeue())
-//  print("$q->dequeue(): " & $q->dequeue())
+  print("$q->dequeue(): " & $q->dequeue())
+  print("$q->dequeue(): " & $q->dequeue())
+  showTime($timer->getTime())
 
   $s = new stack()
   print("$s->push(13)")
@@ -149,6 +212,7 @@ function main()
   $s->push(21)
   print("$s->pop(): " & $s->pop())
   print("$s->pop(): " & $s->pop())
+  showTime($timer->getTime())
 
 
   print("combination_counter(3, 3): " & combination_counter(3, 3))
@@ -158,30 +222,40 @@ function main()
   print("calculate_area([[type => square, width => 20, height => 20], [type => triangle, width => 5, height => 5]]):" & calculate_area([["type" => "square", "width" => 20, "height" => 20], ["type" => "triangle", "width" => 5, "height" => 5]]))
 
   print("$l: " & $l)
-  print("$a: " & $a)
+  print("$m: " & $m)
+  print("$n: " & $n)
+
 
   //Bubble sorts
   print("bubble_sort($l): " & bubble_sort($l))
   showTime($timer->getTime())
-  print("bubble_sort($a): " & bubble_sort($a))
+  print("bubble_sort($n): " & bubble_sort($n))
+  showTime($timer->getTime())
+  print("bubble_sort($m): " & bubble_sort($m))
   showTime($timer->getTime())
 
   //Insertion sorts
   print("insertion_sort($l): " & insertion_sort($l))
   showTime($timer->getTime())
-  print("insertion_sort($a): " & insertion_sort($a))
+  print("insertion_sort($n): " & insertion_sort($n))
+  showTime($timer->getTime())
+  print("insertion_sort($m): " & insertion_sort($m))
   showTime($timer->getTime())
 
   //Quick sorts
   print("quicksort($l): " & quicksort($l))
   showTime($timer->getTime())
-  print("quicksort($a): " & quicksort($a))
+  print("quicksort($n): " & quicksort($n))
+  showTime($timer->getTime())
+  print("quicksort($m): " & quicksort($m))
   showTime($timer->getTime())
 
   //Merge sorts
-  print("mergesort($l): " & mergesort($l))
+  print("mergesort($l): " & mergesort($l)) 
   showTime($timer->getTime())
-  print("mergesort($a): " & mergesort($a))
+  print("mergesort($n): " & mergesort($n))
+  showTime($timer->getTime())
+  print("mergesort($m): " & mergesort($m))
   showTime($timer->getTime())
 
   $l1 = [[32, 49], [32, 49], [37, 23]]
@@ -198,7 +272,7 @@ function main()
   showTime($timer->getTime())
   $l = [43, 12, 8, 23, 99, 301, 41, 22, 91, 451, 27, 83, 106, 11, 13]
 
-  print($l)
+  print("$l: " & $l)
   print("linear_search($l, 23): " & linear_search($l, 23))
   //Binary searches
   showTime($timer->getTime())
@@ -222,10 +296,25 @@ function main()
   print('isAnagramOf("take", "Kate"): ' & isAnagramOf("take", "Kate"))
   print('isAnagramOf("take", "Kates"): ' & isAnagramOf("take", "Kates"))
   print('isAnagramOf("Joir Flambeau", "Jamie Balfour"): ' & isAnagramOf("Joir Flambeau", "Jamie Balfour"))
+  showTime($timer->getTime())
 
   print("flip_number(-5): ", flip_number(-5))
 
   print("meshCalculator(5): ", meshCalculator(5))
+  showTime($timer->getTime())
+
+  print('caesarCipherEncrypt("Hello", 5, false): ' & caesarCipherEncrypt("Hello", 5, false))
+  print('caesarCipherEncrypt("Hello there world", "JamesBond", true): ' & caesarCipherEncrypt("Hello there world", "JamesBond", true))
+  showTime($timer->getTime())
+  $enc = caesarCipherEncrypt("Hello there world", "JamesBond", true)
+  print('$enc = caesarCipherEncrypt("Hello there world", "JamesBond", true)')
+  showTime($timer->getTime())
+  print('caesarCipherDecryptAdvanced($enc, "JamesBond"): ' & caesarCipherDecryptAdvanced($enc, "JamesBond"))
+  showTime($timer->getTime())
+  print('calculateRootMeanSquare([11, 22, 33]): ' & calculateRootMeanSquare([11, 22, 33]))
+
+  print('morseCodeEncode("SOS"): ' & morseCodeEncode("SOS"))
+  print('morseCodeDecode(".--- .- -- .. ."): ' & morseCodeDecode(".--- .- -- .. ."))
 
   $timer->stop()
 
@@ -257,16 +346,24 @@ end function
 @doc "Obtains the greatest common divisor of two numbers, $a and $b."
 public function gcd(number $a, number $b) : number
 
-  if($b <= 1)
+  if($b == 0)
     return $a
   end if
 
-  $div = floor($a / $b)
+  return gcd($b, $a % $b)
 
-  $remainder = $a - ($b * $div)
+end function
 
-  return gcd($b, $remainder)
+private function isBefore($a, $b) : boolean
 
+  if(type($a) == "NUMBER")
+    return $a < $b
+  elseif(type($a) == "STRING")
+    return string_compare($a, $b) == -1
+  end if
+
+  return false
+  
 end function
 
 @author "Jamie Balfour"
@@ -299,7 +396,7 @@ public function bubble_sort(mixed $l) : list | map | boolean
 
   for ($i = 0; $i < $len; $i++)
     for($j = 0; $j < ($len - 1 - $i); $j++)
-      if($j + 1 < $len && $l[$j + 1] < $l[$j])
+      if($j + 1 < $len && isBefore($l[$j + 1], $l[$j]))
         $l = list_swap_elements($l, $j, $j + 1)
       end if
     end for
@@ -339,7 +436,7 @@ public function insertion_sort(mixed $l) : list | map | boolean
     $element = $l[$i]
     $j = $i
 
-    while($j > 0 && $l[$j - 1] > $element)
+    while($j > 0 && isBefore($element, $l[$j - 1]))
       //move value to right and key to previous smaller index
       $l = list_set_at_index($l, $j, $l[$j - 1])
       $j--
@@ -368,11 +465,11 @@ public function quicksort(mixed $l) : list | map | boolean
     $pivot = $l[$low + ($high - $low) / 2]
 
     while($i <= $j)
-      while($l[$i] < $pivot)
+      while(isBefore($l[$i], $pivot))
         $i++
       end while
 
-      while($l[$j] > $pivot)
+      while(isBefore($pivot, $l[$j]))
         $j--
       end while
 
@@ -414,7 +511,7 @@ public function quicksort(mixed $l) : list | map | boolean
     return 0
   end if
 
-  if(list_get_length($l) == 0)
+  if(empty($l))
     return []
   end if
 
@@ -437,7 +534,7 @@ public function mergesort(mixed $l) : list | map | boolean
     $res = [];
 
     while (list_get_length($left) > 0 && list_get_length($right) > 0)
-      if($left[0] > $right[0])
+      if(isBefore($right[0], $left[0]))
         list_add_element(&$res, $right[0])
         $right = list_slice($right , 1)
       else
@@ -503,7 +600,7 @@ public function is_injective(list $l) : boolean
     return 0
   end if
 
-  //This version of isInjective uses associative arrays
+  //This version of isInjective uses maps
 
   $domList = [null => null]
 
@@ -616,7 +713,7 @@ public function linear_search(list $l, mixed $search) : number
 
   while($pos < $len)
 
-    $current = list_get_at_index($l, $pos)
+    $current = $l[$pos]
     if($current == $search)
       return $pos
     end if
@@ -635,12 +732,10 @@ end function
 @doc "Binary search program to return the index"
 public function binary_search(list $l, mixed $search_term) : number
 
-
   if(type($l) == type([]))
-    if(list_get_length($l) == 0)
+    if(empty($l))
       return -1
     end if
-
     //Must sort it first
     $l = quicksort($l)
 
@@ -741,7 +836,7 @@ end function
 @author "Jamie Balfour"
 @date "21 April 2023"
 @doc "Checks if a number is an anagram of another word"
-function isAnagramOf(string $word1, string $word2) : boolean
+public function isAnagramOf(string $word1, string $word2) : boolean
   if(string_get_length($word1) > string_get_length($word2)){
     for each(string_to_lowercase($word1) as $char)
       if(!string_contains(string_to_lowercase($word2), $char))
@@ -763,7 +858,7 @@ end function
 @author "Jamie Balfour"
 @date "21 April 2023"
 @doc "Flips any number into it's opposite form"
-function flip_number(mixed $n) : number
+public function flip_number(mixed $n) : number
 
   return 0 - $n
 
@@ -772,9 +867,227 @@ end function
 @author "Jamie Balfour"
 @date "21 April 2023"
 @doc "Used to calculate how many channels there are in a mesh of n items"
-function meshCalculator(number $n) : number
+public function meshCalculator(number $n) : number
 
   $channels = ($n /2 ) * ($n - 1)
   return $channels 
 
+end function
+
+@author "Jamie Balfour"
+@date "11 November 2023"
+@doc "A Caesar Cipher algorithm - either simple or advanced"
+public function caesarCipherEncrypt($word, $key, $advanced)
+
+
+  function caesarCipherEncryptSimple($word, $shift) : string
+
+    $output = ""
+    $upperA = character_to_integer("A")
+
+    for each($word as $char)
+
+      //Take upper A's ASCII value away as we only want alphabetic symbols
+      $i = (character_to_integer($char) - $upperA + $shift) % 52
+      //Now readd the upper A's ASCII value to get an alphabetic symbol
+      $output = $output & integer_to_character($i  + $upperA)
+
+    end for
+
+    return $output
+
+  end function
+
+  function caesarCipherEncryptAdvanced($word, $key) : string
+
+    $output = ""
+    $position = 0
+  
+    for each($word as $char)
+
+      if($char == " ")
+        $output = $output & " "
+      else
+        $shift = character_to_integer($key[$position % string_get_length($key)])
+
+        $i = character_to_integer($char) + $shift
+        //Now readd the upper A's ASCII value to get an alphabetic symbol
+        $output = $output & integer_to_character($i)
+
+        $position++
+      end if
+
+   
+
+    end for
+
+    return $output
+
+  end function
+  
+  if($advanced)
+    return caesarCipherEncryptAdvanced($word, $key)
+  else
+    return caesarCipherEncryptSimple($word, $key)
+  end if
+
+end function
+
+@author "Jamie Balfour"
+@date "11 November 2023"
+@doc "An advanced Caesar Cipher decryption that uses an list of shifts from a word"
+public function caesarCipherDecryptAdvanced($word, $key) : string
+
+  $output = ""
+  $position = 0
+  
+  for each($word as $char)
+
+    if($char == " ")
+      $output = $output & " "
+    else
+
+
+      $shift = character_to_integer($key[$position % string_get_length($key)])
+
+      $i = character_to_integer($char) - $shift
+      //Now readd the upper A's ASCII value to get an alphabetic symbol
+      $output = $output & integer_to_character($i)
+
+      $position++
+    end if
+
+  end for
+
+  return $output
+
+end function
+
+@author "Jamie Balfour"
+@date "16 December 2023"
+@doc "Calculates the root mean square of a set of numbers"
+public function calculateRootMeanSquare($l) : number
+
+  $total = 0
+  for each($l as $num)
+
+    $total = $total + ($num^2)
+
+  end for
+
+  $total = (1 / count($l)) * $total
+
+  return square_root($total)
+
+end function
+
+@author "Jamie Balfour"
+@date "17 May 2024"
+@doc "Encodes some text in Morse Code"
+public function morseCodeEncode(string $text) : string
+  $text = string_to_uppercase($text)
+  $MORSE_CODE = [
+   "A" => ".-",
+   "B" => "-...",
+   "C" => "-.-.",
+   "D" => "-..",
+   "E" => ".",
+   "F" => "..-.",
+   "G" => "--.",
+   "H" => "....",
+   "I" => "..",
+   "J" => ".---",
+   "K" => "-.-",
+   "L" => ".-..",
+   "M" => "--",
+   "N" => "-.",
+   "O" => "---",
+   "P" => ".--.",
+   "Q" => "--.-",
+   "R" => ".-.",
+   "S" => "...",
+   "T" => "-",
+   "U" => "..-",
+   "V" => "...-",
+   "W" => ".--",
+   "X" => "-..-",
+   "Y" => "-.--",
+   "Z" => "--..",
+   "1" => ".----",
+   "2" => "..---",
+   "3" => "...--",
+   "4" => "....-",
+   "5" => ".....",
+   "6" => "-....",
+   "7" => "--...",
+   "8" => "---..",
+   "9" => "----.",
+   "0" => "-----",
+   " " => "/"
+  ]
+
+  $encoded = ""
+  for each($ch in $text)
+    if(map_contains($MORSE_CODE, $ch))
+      $encoded = $encoded & $MORSE_CODE[$ch] & " "
+      
+    end if
+
+  end for
+
+  return $encoded
+end function
+
+@author "Jamie Balfour"
+@date "17 May 2024"
+@doc "Decodes some Morse Code to text"
+public function morseCodeDecode(string $encoded) : string
+  $MORSE_CODE =[
+   ".-" => "A",
+   "-..." => "B",
+   "-.-." => "C",
+   "-.." => "D",
+   "." => "E",
+   "..-." => "F",
+   "--." => "G",
+   "...." => "H",
+   ".." => "I",
+   ".---" => "J",
+   "-.-" => "K",
+   ".-.." => "L",
+   "--" => "M",
+   "-." => "N",
+   "---" => "O",
+   ".--." => "P",
+   "--.-" => "Q",
+   ".-." => "R",
+   "..." => "S",
+   "-" => "T",
+   "..-" => "U",
+   "...-" => "V",
+   ".--" => "W",
+   "-..-" => "X",
+   "-.--" => "Y",
+   "--.." => "Z",
+   ".----" => "1",
+   "..---" => "2",
+   "...--" => "3",
+   "....-" => "4",
+   "....." => "5",
+   "-...." => "6",
+   "--..." => "7",
+   "---.." => "8",
+   "----." => "9",
+   "-----" => "0",
+   "/" => " "
+  ]
+  $text = ""
+  for each($seq in string_split($encoded, " "))
+    if(map_contains($MORSE_CODE, $seq))
+      $text = $text & $MORSE_CODE[$seq]      
+    end if
+
+  end for
+
+  return $text
 end function
